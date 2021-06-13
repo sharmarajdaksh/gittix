@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  labels:
+    name: ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  tls:
+    - hosts:
+        - gittix.k8s
+      secretName: tls-secret
+  rules:
+    - host: gittix.k8s
+      http:
+        paths:
+          - pathType: Prefix
+            path: /api/users/?(.*)
+            backend:
+              service:
+                name: auth-clusterip
+                port:
+                  number: 3000
+          - pathType: Prefix
+            path: /api/tickets/?(.*)
+            backend:
+              service:
+                name: ticketing-clusterip
+                port:
+                  number: 3000
+          - pathType: Prefix
+            path: /api/orders/?(.*)
+            backend:
+              service:
+                name: ordering-clusterip
+                port:
+                  number: 3000
+          - pathType: Prefix
+            path: /api/payments/?(.*)
+            backend:
+              service:
+                name: payments-clusterip
+                port:
+                  number: 3000
+          - pathType: Prefix
+            path: /?(.*)
+            backend:
+              service:
+                name: client-clusterip
+                port:
+                  number: 3000

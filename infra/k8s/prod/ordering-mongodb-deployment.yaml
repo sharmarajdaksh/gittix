@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ordering-mongodb-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ordering-mongodb
+  template:
+    metadata:
+      labels:
+        app: ordering-mongodb
+    spec:
+      containers:
+        - name: ordering-mongodb
+          image: mongo:3.6
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ordering-mongodb-clusterip
+spec:
+  selector:
+    app: ordering-mongodb
+  type: ClusterIP
+  ports:
+    - name: ordering-mongodb
+      port: 27017
+      targetPort: 27017

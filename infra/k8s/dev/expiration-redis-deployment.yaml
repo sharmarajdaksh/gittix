@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expiration-redis-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: expiration-redis
+  template:
+    metadata:
+      labels:
+        app: expiration-redis
+    spec:
+      containers:
+        - name: expiration-redis
+          image: redis:6.2.3
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: expiration-redis-clusterip
+spec:
+  selector:
+    app: expiration-redis
+  type: ClusterIP
+  ports:
+    - name: expiration-redis
+      port: 6379
+      targetPort: 6379

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments
+  template:
+    metadata:
+      labels:
+        app: payments
+    spec:
+      containers:
+        - name: payments
+          image: sharmarajdaksh/gittix/payments:latest
+          imagePullPolicy: Never
+          env:
+            - name: MONGO_URI
+              value: "mongodb://payments-mongodb-clusterip:27017/payments"
+            - name: NATS_URL
+              value: "nats://nats-clusterip:4222"
+            - name: NATS_CLUSTER_ID
+              value: gittix
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_KEY
+            - name: STRIPE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stripe-secret
+                  key: STRIPE_KEY
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-clusterip
+spec:
+  selector:
+    app: payments
+  type: ClusterIP
+  ports:
+    - name: payments
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ordering-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ordering
+  template:
+    metadata:
+      labels:
+        app: ordering
+    spec:
+      containers:
+        - name: ordering
+          image: sharmarajdaksh/gittix/ordering:latest
+          imagePullPolicy: Never
+          env:
+            - name: MONGO_URI
+              value: "mongodb://ordering-mongodb-clusterip:27017/ordering"
+            - name: NATS_URL
+              value: "nats://nats-clusterip:4222"
+            - name: NATS_CLUSTER_ID
+              value: gittix
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_KEY
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ordering-clusterip
+spec:
+  selector:
+    app: ordering
+  type: ClusterIP
+  ports:
+    - name: ordering
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

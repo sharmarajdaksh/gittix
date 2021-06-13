@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticketing-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ticketing
+  template:
+    metadata:
+      labels:
+        app: ticketing
+    spec:
+      containers:
+        - name: ticketing
+          image: sharmarajdaksh/gittix/ticketing:latest
+          imagePullPolicy: Never
+          env:
+            - name: MONGO_URI
+              value: "mongodb://ticketing-mongodb-clusterip:27017/ticketing"
+            - name: NATS_URL
+              value: "nats://nats-clusterip:4222"
+            - name: NATS_CLUSTER_ID
+              value: gittix
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_KEY
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ticketing-clusterip
+spec:
+  selector:
+    app: ticketing
+  type: ClusterIP
+  ports:
+    - name: ticketing
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

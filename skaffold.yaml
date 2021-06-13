@@ -1,0 +1,62 @@
+apiVersion: skaffold/v2beta16
+kind: Config
+metadata:
+  name: gittix
+deploy:
+  kubectl:
+    manifests:
+      - infra/k8s/dev/*
+build:
+  local:
+    push: false
+  artifacts:
+    - image: sharmarajdaksh/gittix/client
+      context: client
+      docker:
+        dockerfile: Dockerfile.dev
+      sync:
+        manual:
+          - src: "**/*.js"
+            dest: .
+          - src: "**/*.css"
+            dest: .
+    - image: sharmarajdaksh/gittix/auth
+      context: auth
+      docker:
+        dockerfile: Dockerfile.dev
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
+    - image: sharmarajdaksh/gittix/ticketing
+      context: ticketing
+      docker:
+        dockerfile: Dockerfile.dev
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
+    - image: sharmarajdaksh/gittix/ordering
+      context: ordering
+      docker:
+        dockerfile: Dockerfile.dev
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
+    - image: sharmarajdaksh/gittix/expiration
+      context: expiration
+      docker:
+        dockerfile: Dockerfile.dev
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
+    - image: sharmarajdaksh/gittix/payments
+      context: payments
+      docker:
+        dockerfile: Dockerfile.dev
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
